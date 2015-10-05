@@ -183,14 +183,14 @@ def generate_fitting_dates(data, date_method, rollyears=20):
             yearidx_to_use=max(0, tidx-rollyears)
             fit_start=yearstarts[yearidx_to_use]
         else:
-            raise Exception("don't recognise date_method")
+            raise Exception("don't recognise date_method %s" % date_method)
             
         if date_method=="in_sample":
             fit_end=end_date
         elif date_method in ['rolling', 'expanding']:
             fit_end=period_start
         else:
-            raise Exception("don't recognise date_method")
+            raise Exception("don't recognise date_method %s " % date_method)
         
         periods.append([fit_start, fit_end, period_start, period_end])
 
@@ -259,12 +259,14 @@ def optimise_over_periods(data, date_method, fit_method, rollyears=20, equalisem
         
         print "Fitting data for %s to %s" % (str(fit_tuple[2]), str(fit_tuple[3]))
         
-        if fit_method=="one_shot":
+        if fit_method=="one_period":
             weights=markosolver(period_subset_data, equalisemeans=equalisemeans, equalisevols=equalisevols)
         elif fit_method=="bootstrap":
             weights=bootstrap_portfolio(period_subset_data, equalisemeans=equalisemeans, 
                                         equalisevols=equalisevols, monte_carlo=monte_carlo, 
                                         monte_length=monte_length)
+        else:
+            raise Exception("Fitting method %s unknown" % fit_method)
         
         ## We adjust dates slightly to ensure no overlaps
         dindex=[fit_tuple[2]+datetime.timedelta(seconds=1), fit_tuple[3]-datetime.timedelta(seconds=1)]
