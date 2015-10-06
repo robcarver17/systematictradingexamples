@@ -1,8 +1,8 @@
 """
 This file shows how to do a number of different optimisations - 'one shot' and bootstrapping ;
-  also entirely in sample, expanding, and rolling windows
+  also entirely in sample, expanding, and rolling windows 
 
-As in chapter 4 of "Systematic Trading" by Robert Carver (www.systematictrading.org)
+As in chapters 3 and 4 of "Systematic Trading" by Robert Carver (www.systematictrading.org)
 
 Required: pandas / numpy, matplotlib
 
@@ -10,6 +10,8 @@ USE AT YOUR OWN RISK! No warranty is provided or implied.
 
 Handling of NAN's and Inf's isn't done here (except within pandas), 
 And there is no error handling!
+
+The bootstrapping method here is not 'block' bootstrapping, so any time series dependence of returns will be lost 
 
 """
 
@@ -220,6 +222,7 @@ def bootstrap_portfolio(returns_to_bs, monte_carlo=200, monte_length=250, equali
     
     """
     
+    
     weightlist=[]
     for unused_index in range(monte_carlo):
         bs_idx=[int(random.uniform(0,1)*len(returns_to_bs)) for i in range(monte_length)]
@@ -228,6 +231,9 @@ def bootstrap_portfolio(returns_to_bs, monte_carlo=200, monte_length=250, equali
         weight=markosolver(returns, equalisemeans=equalisemeans, equalisevols=equalisevols, default_vol=default_vol, default_SR=default_SR)
         weightlist.append(weight)
         
+    ### We can take an average here; only because our weights always add up to 1. If that isn't true
+    ###    then you will need to some kind of renormalisation
+     
     theweights_mean=list(np.mean(weightlist, axis=0))
     return theweights_mean
 
@@ -280,6 +286,18 @@ def optimise_over_periods(data, date_method, fit_method, rollyears=20, equalisem
     
     return weight_df
 
+
+def opt_and_plot(*args, **kwargs):
+    """
+    Function to do optimisation and plotting in one go
+
+    """
+
+    mat1=optimise_over_periods(*args, **kwargs)
+    mat1.plot()
+    plt.show()
+
+
 ## Get the data
 
 filename="/home/rsc/workspace/systematictradingexamples/assetprices.csv"
@@ -288,12 +306,24 @@ data=pd_readcsv(filename)
 ## Let's do some optimisation
 ## Feel free to play with these
 
-mat1=optimise_over_periods(data, "expanding", "one_shot", equalisevols=True)
-mat1.plot()
-plt.show()
+"""
+Remember the arguments are:
+data, date_method, fit_method, rollyears=20, equalisemeans=False, equalisevols=True, 
+                          monte_carlo=200, monte_length=250
 
-## This will take longer
-## Reduce the bootstraps for speed (reduce monte_carlo) but will get noisier results
-mat2=optimise_over_periods(data, "expanding", "bootstrap", equalisevols=True, monte_carlo=200)
-mat2.plot()
-plt.show()
+"""
+opt_and_plot(data, "in_sample", "one_period", equalisemeans=False, equalisevols=False)
+
+opt_and_plot(data, "in_sample", "one_period", equalisemeans=False, equalisevols=True)
+
+opt_and_plot(data, "in_sample", "one_period", equalisemeans=True, equalisevols=True)
+
+opt_and_plot(data, "in_sample", "bootstrap", equalisemeans=False, equalisevols=True, monte_carlo=500)
+
+opt_and_plot(data, "rolling", "one_period", rollyears=1, equalisemeans=False, equalisevols=True)
+
+opt_and_plot(data, "rolling", "one_period", rollyears=5, equalisemeans=False, equalisevols=True)
+
+opt_and_plot(data, "expanding", "one_period", equalisemeans=False, equalisevols=True)
+
+opt_and_plot(data, "expanding", "bootstrap", equalisemeans=False, equalisevols=True)
