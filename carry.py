@@ -48,18 +48,21 @@ def pd_readcsv(filename):
 
     
     ans=pd.read_csv(filename)
+    
+    print ans
+    
     ans.index=pd.to_datetime(ans['DATETIME'])
     del ans['DATETIME']
     ans.index.name=None
     
     return ans
 
-filename="crudeoilcarrydata.csv"
+filename="data/CRUDE_W_carrydata.csv"
 data=pd_readcsv(filename)
 
 ## This is the stitched price series
 ## We can't use the price of the contract we're trading, or the volatility will be jumpy
-filename="crudeoilprice.csv"
+filename="data/CRUDE_W_price.csv"
 price=pd_readcsv(filename)
 
 

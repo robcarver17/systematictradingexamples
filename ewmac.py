@@ -82,7 +82,7 @@ get some data
 ## We can't use the price of the contract we're trading, or the volatility will be jumpy
 ## And we'll miss out on the rolldown. See http://qoppac.blogspot.co.uk/2015/05/systems-building-futures-rolling.html
 
-filename="crudeoilprice.csv"
+filename="data/CRUDE_W_price.csv"
 price=pd_readcsv(filename)
 
 ## Shouldn't need changing
