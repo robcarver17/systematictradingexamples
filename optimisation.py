@@ -300,30 +300,32 @@ def opt_and_plot(*args, **kwargs):
 
 ## Get the data
 
-filename="/home/rsc/workspace/systematictradingexamples/assetprices.csv"
+filename="assetprices.csv"
 data=pd_readcsv(filename)
 
 ## Let's do some optimisation
 ## Feel free to play with these
 
-"""
-Remember the arguments are:
-data, date_method, fit_method, rollyears=20, equalisemeans=False, equalisevols=True, 
-                          monte_carlo=200, monte_length=250
-
-"""
-opt_and_plot(data, "in_sample", "one_period", equalisemeans=False, equalisevols=False)
-
-opt_and_plot(data, "in_sample", "one_period", equalisemeans=False, equalisevols=True)
-
-opt_and_plot(data, "in_sample", "one_period", equalisemeans=True, equalisevols=True)
-
-opt_and_plot(data, "in_sample", "bootstrap", equalisemeans=False, equalisevols=True, monte_carlo=500)
-
-opt_and_plot(data, "rolling", "one_period", rollyears=1, equalisemeans=False, equalisevols=True)
-
-opt_and_plot(data, "rolling", "one_period", rollyears=5, equalisemeans=False, equalisevols=True)
-
-opt_and_plot(data, "expanding", "one_period", equalisemeans=False, equalisevols=True)
-
-opt_and_plot(data, "expanding", "bootstrap", equalisemeans=False, equalisevols=True)
+if __name__=="__main__":
+    
+    """
+    Remember the arguments are:
+    data, date_method, fit_method, rollyears=20, equalisemeans=False, equalisevols=True, 
+                              monte_carlo=200, monte_length=250
+    
+    """
+    opt_and_plot(data, "in_sample", "one_period", equalisemeans=False, equalisevols=False)
+    
+    opt_and_plot(data, "in_sample", "one_period", equalisemeans=False, equalisevols=True)
+    
+    opt_and_plot(data, "in_sample", "one_period", equalisemeans=True, equalisevols=True)
+    
+    opt_and_plot(data, "in_sample", "bootstrap", equalisemeans=False, equalisevols=True, monte_carlo=500)
+    
+    opt_and_plot(data, "rolling", "one_period", rollyears=1, equalisemeans=False, equalisevols=True)
+    
+    opt_and_plot(data, "rolling", "one_period", rollyears=5, equalisemeans=False, equalisevols=True)
+    
+    opt_and_plot(data, "expanding", "one_period", equalisemeans=False, equalisevols=True)
+    
+    opt_and_plot(data, "expanding", "bootstrap", equalisemeans=False, equalisevols=True)
