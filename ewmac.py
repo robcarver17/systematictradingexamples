@@ -14,64 +14,7 @@ And there is no error handling!
 
 import pandas as pd
 import matplotlib.pyplot as plt
-
-def pd_readcsv(filename):
-    """
-    Reads the pandas dataframe from a filename, given the index is correctly labelled
-    """
-
-    
-    ans=pd.read_csv(filename)
-    ans.index=pd.to_datetime(ans['DATETIME'])
-    del ans['DATETIME']
-    ans.index.name=None
-    
-    return ans
-
-
-def forecast_scalar(Lfast, Lslow):
-    """
-    Function to return the forecast scalar (table 49 of the book)
-    
-    Only defined for certain values
-    """
-    
-    
-    fsdict=dict(l2_8=10.6, l4_16=7.5, l8_32=5.3, l16_64=3.75, l32_128=2.65, l64_256=1.87)
-    
-    lkey="l%d_%d" % (Lfast, Lslow)
-    
-    if lkey in fsdict:
-        return fsdict[lkey]
-    else:
-        print "Warning: No scalar defined for Lfast=%d, Lslow=%d, using default of 1.0" % (Lfast, Lslow)
-        return 1.0
-
-    
-    
-def cap_forecast(xrow, capmin,capmax):
-    """
-    Cap forecasts.
-    
-    """
-
-    ## Assumes we have a single column    
-    x=xrow[0]
-
-    if x<capmin:
-        return capmin
-    elif x>capmax:
-        return capmax
-    
-    return x
-
-def cap_series(xseries, capmin=-20.0,capmax=20.0):
-    """
-    Apply capping to each element of a time series
-    For a long only investor, replace -20.0 with 0.0
-
-    """
-    return xseries.apply(cap_forecast, axis=1, args=(capmin, capmax))
+from common import pd_readcsv, cap_series, ewmac_forecast_scalar, get_price_for_instrument
 
     
 """
@@ -81,9 +24,9 @@ get some data
 ## This is the stitched price series
 ## We can't use the price of the contract we're trading, or the volatility will be jumpy
 ## And we'll miss out on the rolldown. See http://qoppac.blogspot.co.uk/2015/05/systems-building-futures-rolling.html
+code="CRUDE_W"
+price=get_price_for_instrument(code)
 
-filename="data/CRUDE_W_price.csv"
-price=pd_readcsv(filename)
 
 ## Shouldn't need changing
 vol_lookback=25
@@ -125,7 +68,7 @@ plt.title("Vol adjusted")
 plt.show()
 
 ## scaling adjustment
-f_scalar=forecast_scalar(Lfast, Lslow)
+f_scalar=ewmac_forecast_scalar(Lfast, Lslow)
 
 forecast=vol_adj_ewmac*f_scalar
 
