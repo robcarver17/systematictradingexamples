@@ -50,7 +50,7 @@ def make_binary_row(x, min_value,max_value):
 
 
 ## If you set Lfast to None, will use carry rule
-Lfast=16
+Lfast=None
 
 
 code_list=get_list_code()
