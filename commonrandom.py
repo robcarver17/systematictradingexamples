@@ -61,9 +61,20 @@ def arbitrary_timeseries(datalist, index_start=pd.datetime(2000,1,1)):
     For nice plotting, convert a list of prices or returns into an arbitrary pandas time series
     """    
     
-    ans=pd.TimeSeries(datalist, index=pd.date_range(start=index_start, periods=len(datalist), freq="BDay"))
+    ans=pd.TimeSeries(datalist, index=pd.bdate_range(start=index_start, periods=len(datalist)))
     
     return ans
+
+def cum_perc(pd_timeseries):
+    """
+    Cumulate percentage returns for a pandas time series
+    """
+    
+    cum_datalist=[1+x for x in pd_timeseries]
+    cum_datalist=pd.TimeSeries(cum_datalist, index=pd_timeseries.index)
+    
+    
+    return cum_datalist.cumprod()
 
 def threeassetportfolio(plength=5000, SRlist=[1.0, 1.0, 1.0], annual_vol=.15, clist=[.0,.0,.0], index_start=pd.datetime(2000,1,1)):
 
