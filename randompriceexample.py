@@ -7,3 +7,11 @@ print ans
 print len(ans)
 ans.plot()
 show()
+
+ans=arbitrary_timeseries(generate_trendy_price(Nlength=180, Tlength=30, Xamplitude=10.0, Volscale=0.1))
+ans.plot()
+show()
+
+ans=arbitrary_timeseries(generate_trendy_price(Nlength=180, Tlength=30, Xamplitude=10.0, Volscale=0.5))
+ans.plot()
+show()

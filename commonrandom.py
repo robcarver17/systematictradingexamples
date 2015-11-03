@@ -62,5 +62,23 @@ def arbitrary_timeseries(datalist, index_start=pd.datetime(2000,1,1)):
     
     return ans
 
+def threeassetportfolio(plength=5000, SRlist=[1.0, 1.0, 1.0], annual_vol=.15, clist=[.0,.0,.0]):
 
+    (c1, c2, c3)=clist
+    dindex=pd.date_range(start=pd.datetime(1990,1,1), periods=plength)
+
+    daily_vol=annual_vol/16.0
+    means=[x*annual_vol/250.0 for x in SRlist]
+    stds = np.diagflat([daily_vol]*3)
+    corr=np.array([[1.0, c1, c2], [c1, 1.0, c3], [c2, c3, 1.0]])
+ 
+    covs=np.dot(stds, np.dot(corr, stds))
+    plength=len(dindex)
+
+    m = np.random.multivariate_normal(means, covs, plength).T
+
+    portreturns=pd.DataFrame(dict(one=m[0], two=m[1], three=m[2]), dindex)
+    portreturns=portreturns[['one', 'two', 'three']]
+    
+    return portreturns
 
