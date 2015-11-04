@@ -5,8 +5,6 @@ Functions used to create random data
 from random import gauss
 import numpy as np
 import pandas as pd
-import scipy.stats as st
-import math as maths
 from common import DAYS_IN_YEAR, ROOT_DAYS_IN_YEAR
 
 def generate_trends(Nlength, Tlength , Xamplitude):
@@ -56,30 +54,30 @@ def generate_noise(Nlength, stdev):
     return [gauss(0.0, stdev) for Unused in range(Nlength)]
 
 
+def arbitrary_timeindex(Nperiods, index_start=pd.datetime(2000,1,1)):
+    """
+    For nice plotting, convert a list of prices or returns into an arbitrary pandas time series
+    """    
+    
+    ans=pd.bdate_range(start=index_start, periods=Nperiods)
+    
+    return ans
+
+
 def arbitrary_timeseries(datalist, index_start=pd.datetime(2000,1,1)):
     """
     For nice plotting, convert a list of prices or returns into an arbitrary pandas time series
     """    
     
-    ans=pd.TimeSeries(datalist, index=pd.bdate_range(start=index_start, periods=len(datalist)))
+    ans=pd.TimeSeries(datalist, index=arbitrary_timeindex(len(datalist), index_start))
     
     return ans
 
-def cum_perc(pd_timeseries):
-    """
-    Cumulate percentage returns for a pandas time series
-    """
-    
-    cum_datalist=[1+x for x in pd_timeseries]
-    cum_datalist=pd.TimeSeries(cum_datalist, index=pd_timeseries.index)
-    
-    
-    return cum_datalist.cumprod()
 
 def threeassetportfolio(plength=5000, SRlist=[1.0, 1.0, 1.0], annual_vol=.15, clist=[.0,.0,.0], index_start=pd.datetime(2000,1,1)):
 
     (c1, c2, c3)=clist
-    dindex=pd.date_range(start=index_start, periods=plength, freq="Bday")
+    dindex=arbitrary_timeindex(plength, index_start)
 
     daily_vol=annual_vol/16.0
     means=[x*annual_vol/250.0 for x in SRlist]
@@ -102,7 +100,7 @@ def skew_returns_annualised(annualSR=1.0, want_skew=0.0, voltarget=0.20, size=10
     daily_rets=annual_rets/DAYS_IN_YEAR
     daily_vol=voltarget/ROOT_DAYS_IN_YEAR
     
-    return skew_returns(want_mean=daily_rets,  want_stdev=daily_vol,want_skew=want_skew, size=10000)
+    return skew_returns(want_mean=daily_rets,  want_stdev=daily_vol,want_skew=want_skew, size=size)
 
 def skew_returns(want_mean,  want_stdev, want_skew, size=10000):
     

@@ -1,4 +1,10 @@
-from commonrandom import arbitrary_timeseries, skew_returns_annualised, cum_perc
+"""
+See http://qoppac.blogspot.co.uk/2015/11/using-random-data.html for more examples
+"""
+
+
+from commonrandom import arbitrary_timeseries, skew_returns_annualised
+from common import cum_perc
 from matplotlib.pyplot import show
 
 ans=arbitrary_timeseries(skew_returns_annualised(annualSR=0.5, want_skew=0.0, size=2500))

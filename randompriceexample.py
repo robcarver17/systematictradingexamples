@@ -1,3 +1,8 @@
+"""
+See http://qoppac.blogspot.co.uk/2015/11/using-random-data.html for more examples
+"""
+
+
 from commonrandom import arbitrary_timeseries, generate_trendy_price
 from matplotlib.pyplot import show
 

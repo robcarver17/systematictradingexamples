@@ -168,4 +168,87 @@ def stack_ts(tslist, start_date=pd.datetime(1970,1,1)):
     
     
     return stacked
-     
+
+def drawdown(x):
+    ### Returns a ts of drawdowns for a time series x
+    
+    ## rolling max with infinite window
+    maxx=pd.rolling_max(x, 99999999, min_periods=1)
+    return (x - maxx)/maxx
+
+class account_curve(pd.core.series.Series):
+    """
+    Inherits from pandas time series to give useful information
+    
+    Could be in % or GBP terms
+    
+    Downsamples to daily before doing anything else
+    
+    Can 
+    
+    """
+    
+    
+    def sharpe(self):
+        return ROOT_DAYS_IN_YEAR*self.mean()/self.std()
+    
+    
+    def losses(self):
+        x=self.values
+        return [z for z in x if z<0]
+    
+    def gains(self):
+        x=self.values
+        return [z for z in x if z>0]
+    
+    def avg_loss(self):
+        return np.mean(self.losses())
+
+    def avg_gain(self):
+        return np.mean(self.gains())
+    
+    def drawdown(self):
+        return drawdown(cum_perc(self))
+    
+    def avg_drawdown(self):
+        return self.perc_drawdown(50.0)
+    
+    def perc_drawdown(self, q):
+        dd=self.drawdown()
+        return np.percentile(dd, q)
+
+    def worst_drawdown(self):
+        dd=self.drawdown()
+        return np.nanmin(dd.values)
+        
+    def time_in_drawdown(self):
+        dd=self.drawdown()
+        dd=[z for z in dd if not np.isnan(z)]
+        in_dd=float(len([z for z in dd if z<0]))
+        return in_dd/float(len(dd))
+        
+    def monthly_returns(self):
+        return self.resample("1M", how="sum")
+    
+    def gaintolossratio(self):
+        return self.avg_gain()/-self.avg_loss()
+    
+    def profitfactor(self):
+        return sum(self.gains())/-sum(self.losses())
+    
+    def hitrate(self):
+        no_gains=float(len(self.gains()))
+        no_losses=float(len(self.losses()))
+        return no_gains/(no_losses+no_gains)
+    
+
+def cum_perc(pd_timeseries):
+    """
+    Cumulate percentage returns for a pandas time series
+    """
+    
+    cum_datalist=[1+x for x in pd_timeseries]
+    cum_datalist=pd.TimeSeries(cum_datalist, index=pd_timeseries.index)
+    
+    
+    return cum_datalist.cumprod()
