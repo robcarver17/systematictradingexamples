@@ -5,7 +5,8 @@ Functions used to create random data
 from random import gauss
 import numpy as np
 import pandas as pd
-from common import DAYS_IN_YEAR, ROOT_DAYS_IN_YEAR
+from common import DAYS_IN_YEAR, ROOT_DAYS_IN_YEAR, arbitrary_timeindex
+import scipy.signal as sg
 
 def generate_trends(Nlength, Tlength , Xamplitude):
     """
@@ -54,24 +55,6 @@ def generate_noise(Nlength, stdev):
     return [gauss(0.0, stdev) for Unused in range(Nlength)]
 
 
-def arbitrary_timeindex(Nperiods, index_start=pd.datetime(2000,1,1)):
-    """
-    For nice plotting, convert a list of prices or returns into an arbitrary pandas time series
-    """    
-    
-    ans=pd.bdate_range(start=index_start, periods=Nperiods)
-    
-    return ans
-
-
-def arbitrary_timeseries(datalist, index_start=pd.datetime(2000,1,1)):
-    """
-    For nice plotting, convert a list of prices or returns into an arbitrary pandas time series
-    """    
-    
-    ans=pd.TimeSeries(datalist, index=arbitrary_timeindex(len(datalist), index_start))
-    
-    return ans
 
 
 def threeassetportfolio(plength=5000, SRlist=[1.0, 1.0, 1.0], annual_vol=.15, clist=[.0,.0,.0], index_start=pd.datetime(2000,1,1)):
@@ -122,3 +105,44 @@ def skew_returns(want_mean,  want_stdev, want_skew, size=10000):
     
     return sample
 
+def autocorr_skewed_returns(rho, want_mean,  want_stdev, want_skew, size=10000):
+    
+    
+    ## closed form correction for ar1 process noise
+    noise_stdev=(want_stdev**2 * (1-rho))**.5
+    noise_terms=skew_returns(want_mean, noise_stdev, want_skew, size)
+    
+    ## combine the noise with a filter
+    return sg.lfilter((1,),(1,-rho),noise_terms)
+
+
+
+
+def adj_moments_for_rho(want_rho, want_mean, want_skew, want_stdev):
+    """
+    Autocorrelation introduces biases into other moments of a distribution
+    
+    Here I correct for these
+    """
+    assert abs(want_rho)<=0.8
+    
+    mean_correction=1/(1-want_rho)
+    
+    if want_rho>=0.0:
+        skew_correction=(1-want_rho)**.5
+    else:
+        skew_correction=np.interp(want_rho, [-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -.2, -0.1],
+                                            [.14,  .27,  .42,   .58,  .72, .84,  .93, .98 ])
+    
+    ## somewhat hacky, but we do a correction inside the random generation function already
+    
+    stdev_correction=np.interp(want_rho, [-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -.2, -0.1,  
+                                          0.0,.1,.2,.3,.4,.5,.6,.7,.8],
+                               [2.24, 1.83, 1.58, 1.41, 1.29, 1.19, 1.12, 1.05,
+                                1.0, .95,.91,.88 ,.85, .82 , .79,.77 ,.75])
+    
+    adj_want_stdev=want_stdev/stdev_correction
+    adj_want_mean=want_mean/mean_correction
+    adj_want_skew=want_skew/skew_correction
+
+    return (adj_want_mean, adj_want_skew, adj_want_stdev)

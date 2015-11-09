@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import scipy.stats as st
 DAYS_IN_YEAR=256.0
 ROOT_DAYS_IN_YEAR=DAYS_IN_YEAR**.5
 
@@ -157,17 +158,29 @@ def stack_ts(tslist, start_date=pd.datetime(1970,1,1)):
     
 
     tslist_values=[list(x.iloc[:,0].values) for x in tslist]
-        
     stack_values=sum(tslist_values, [])
-    
     stack_values=[x for x in stack_values if not np.isinf(x)]
     
-    stack_index=pd.date_range(start=start_date, periods=len(stack_values), freq="H")
-    
-    stacked=pd.TimeSeries(stack_values, index=stack_index)
+    stacked=arbitrary_timeindex(stack_values, start_date)
     
     
     return stacked
+
+def break_up_ts(data, freq="12M"):
+    """
+    Take a data frame and break it into chunks 
+    returns a list of data frames
+    """
+    yridx=list(pd.date_range(start=data.index[0], end=data.index[-1], freq=freq))
+    yridx_stub=list(pd.date_range(start=yridx[-1], periods=2, freq=freq))[-1]
+    yridx=yridx+[yridx_stub]
+
+    brokenup=[]
+    for idx in range(len(yridx))[1:]:
+        brokenup.append(data[yridx[idx-1]:yridx[idx]])
+    
+    return brokenup
+    
 
 def drawdown(x):
     ### Returns a ts of drawdowns for a time series x
@@ -189,9 +202,23 @@ class account_curve(pd.core.series.Series):
     """
     
     
+    def new_freq(self, freq):
+        ## Set up a new frequency.
+        ## Note this will break certain things (eg Sharpe) so be careful
+        if freq=="Daily":
+            ## we assume we're daily so do nothing
+            return self
+        if freq=="Weekly":
+            return self.cumsum().ffill().resample("W").diff()
+        if freq=="Monthly":
+            return self.cumsum().ffill().resample("M").diff()
+    
     def sharpe(self):
+        ## assumes daily returns
         return ROOT_DAYS_IN_YEAR*self.mean()/self.std()
     
+    def annstd(self):
+        return ROOT_DAYS_IN_YEAR*self.std()
     
     def losses(self):
         x=self.values
@@ -252,3 +279,30 @@ def cum_perc(pd_timeseries):
     
     
     return cum_datalist.cumprod()
+
+def arbitrary_timeindex(Nperiods, index_start=pd.datetime(2000,1,1)):
+    """
+    For nice plotting, convert a list of prices or returns into an arbitrary pandas time series
+    """    
+    
+    ans=pd.bdate_range(start=index_start, periods=Nperiods)
+    
+    return ans
+
+
+def arbitrary_timeseries(datalist, index_start=pd.datetime(2000,1,1)):
+    """
+    For nice plotting, convert a list of prices or returns into an arbitrary pandas time series
+    """    
+    
+    ans=pd.TimeSeries(datalist, index=arbitrary_timeindex(len(datalist), index_start))
+    
+    return ans
+
+def remove_nans_from_list(xlist):
+    return [x for x in xlist if not np.isnan(x)]
+
+
+
+def autocorr(x, t=1):
+    return np.corrcoef(np.array([x[0:len(x)-t], x[t:len(x)]]))[0,1]
