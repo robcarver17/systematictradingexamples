@@ -36,7 +36,7 @@ def volatility(price, vol_lookback=25):
     return pd.ewmstd(price - price.shift(1), span=vol_lookback, min_periods=vol_lookback)    
 
 
-def calc_ewmac_forecast(price, Lfast, Lslow=None):
+def calc_ewmac_forecast(price, Lfast, Lslow=None, usescalar=True):
     
     
     """
@@ -62,9 +62,11 @@ def calc_ewmac_forecast(price, Lfast, Lslow=None):
     vol_adj_ewmac=raw_ewmac/stdev_returns
     
     ## scaling adjustment
-    f_scalar=ewmac_forecast_scalar(Lfast, Lslow)
-    
-    forecast=vol_adj_ewmac*f_scalar
+    if usescalar:
+        f_scalar=ewmac_forecast_scalar(Lfast, Lslow)
+        forecast=vol_adj_ewmac*f_scalar
+    else:
+        forecast=vol_adj_ewmac
     
     cap_forecast=cap_series(forecast, capmin=-20.0,capmax=20.0)
     

@@ -8,6 +8,27 @@ import pandas as pd
 from common import DAYS_IN_YEAR, ROOT_DAYS_IN_YEAR, arbitrary_timeindex
 import scipy.signal as sg
 
+def generate_siney_trends(Nlength, Tlength , Xamplitude):
+    """
+    Generates a price process, Nlength returns, underlying trend with length T and amplitude X
+    as a sine wave
+    
+    returns a vector of numbers as a list
+    
+    """
+
+    halfAmplitude=Xamplitude/2.0
+
+    cycles=Nlength/Tlength
+    cycles_as_pi=cycles*np.pi
+    increment=cycles_as_pi/Nlength
+    
+    alltrends=[np.sin(x)*halfAmplitude for x in np.arange(0.0, cycles_as_pi, increment)]
+    alltrends=alltrends[:Nlength]
+    
+    return alltrends
+    
+
 def generate_trends(Nlength, Tlength , Xamplitude):
     """
     Generates a price process, Nlength returns, underlying trend with length T and amplitude X
@@ -30,9 +51,13 @@ def generate_trends(Nlength, Tlength , Xamplitude):
     return alltrends
 
     
-def generate_trendy_price(Nlength, Tlength , Xamplitude, Volscale):
+
+    
+def generate_trendy_price(Nlength, Tlength , Xamplitude, Volscale, sines=False):
     """
     Generates a trend of length N amplitude X, plus gaussian noise mean zero std. dev (vol scale * amplitude)
+    
+    If sines=True then generates as a sine wave, otherwise straight line
     
     returns a vector of numbers
     """
@@ -41,7 +66,10 @@ def generate_trendy_price(Nlength, Tlength , Xamplitude, Volscale):
     noise=generate_noise(Nlength, stdev)
 
     ## Can use a different process here if desired
-    process=generate_trends(Nlength, Tlength , Xamplitude)    
+    if sines:
+        process=generate_siney_trends(Nlength, Tlength , Xamplitude) 
+    else:
+        process=generate_trends(Nlength, Tlength , Xamplitude)    
     
     combined_price=[noise_item+process_item for (noise_item, process_item) in zip(noise, process)]
     

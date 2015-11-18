@@ -166,15 +166,23 @@ def stack_ts(tslist, start_date=pd.datetime(1970,1,1)):
     
     return stacked
 
+def slices_for_ts(data, freq="12M"):
+    """
+    Return date indices for slicing up a data frame
+    """
+    yridx=list(pd.date_range(start=data.index[0], end=data.index[-1], freq=freq))
+    yridx_stub=list(pd.date_range(start=yridx[-1], periods=2, freq=freq))[-1]
+    yridx=yridx+[yridx_stub]
+    
+    return yridx
+
 def break_up_ts(data, freq="12M"):
     """
     Take a data frame and break it into chunks 
     returns a list of data frames
     """
-    yridx=list(pd.date_range(start=data.index[0], end=data.index[-1], freq=freq))
-    yridx_stub=list(pd.date_range(start=yridx[-1], periods=2, freq=freq))[-1]
-    yridx=yridx+[yridx_stub]
-
+    yridx=slices_for_ts(data, freq)
+    
     brokenup=[]
     for idx in range(len(yridx))[1:]:
         brokenup.append(data[yridx[idx-1]:yridx[idx]])
@@ -188,6 +196,9 @@ def drawdown(x):
     ## rolling max with infinite window
     maxx=pd.rolling_max(x, 99999999, min_periods=1)
     return (x - maxx)/maxx
+
+    
+    
 
 class account_curve(pd.core.series.Series):
     """
@@ -235,7 +246,10 @@ class account_curve(pd.core.series.Series):
         return np.mean(self.gains())
     
     def drawdown(self):
-        return drawdown(cum_perc(self))
+        ## in case need numerous stats
+        if "drawdownacc" not in dir(self):
+            setattr(self, "drawdownacc", drawdown(cum_perc(self)))
+        return self.drawdownacc
     
     def avg_drawdown(self):
         return self.perc_drawdown(50.0)
@@ -279,6 +293,7 @@ def cum_perc(pd_timeseries):
     
     
     return cum_datalist.cumprod()
+
 
 def arbitrary_timeindex(Nperiods, index_start=pd.datetime(2000,1,1)):
     """

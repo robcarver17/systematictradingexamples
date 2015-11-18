@@ -20,7 +20,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import minimize
+from copy import copy
 import random
+
+HANDCRAFTED_WTS=pd.read_csv("/home/rob/workspace/systematictradingexamples/handcraftweights.csv")
 
 def pd_readcsv(filename):
     """
@@ -99,6 +102,117 @@ def equalise_vols(returns, default_vol):
 
     return norm_returns
 
+
+def offdiag_matrix(offvalue, nlength):
+    identity=np.diag([1.0]*nlength)
+    for x in range(nlength):
+        for y in range(nlength):
+            if x!=y:
+                identity[x][y]=offvalue
+    return identity
+
+def get_avg_corr(sigma):
+    new_sigma=copy(sigma)
+    np.fill_diagonal(new_sigma,np.nan)
+    return np.nanmean(new_sigma)
+
+def nearest_to_listvals(x, lvalues=[0.0, 0.25, 0.5, 0.75, 0.9]):
+    ## return x rounded to nearest of lvalues
+    
+    if len(lvalues)==1:
+        return lvalues[0]
+    
+    d1=abs(x - lvalues[0])
+    d2=abs(x - lvalues[1])
+    
+    if d1<d2:
+        return lvalues[0]
+    
+    newlvalues=lvalues[1:]
+    
+    return nearest_to_listvals(x, newlvalues)
+    
+
+def handcrafted(returns, equalisevols=True, default_vol=0.2):
+    """
+    Handcrafted optimiser
+    """
+
+
+    count_assets=len(returns.columns)
+    
+    try:
+        
+        assert equalisevols is True
+        assert count_assets<=3
+    except:
+        raise Exception("Handcrafting only works with equalised vols and 3 or fewer assets")
+    
+    if count_assets<3:
+        ## Equal weights
+        return [1.0/count_assets]*count_assets
+
+    est_corr=returns.corr().values
+    c1=nearest_to_listvals(est_corr[0][1])
+    c2=nearest_to_listvals(est_corr[0][2])
+    c3=nearest_to_listvals(est_corr[1][2])
+    
+    wts_to_use=HANDCRAFTED_WTS[(HANDCRAFTED_WTS.c1==c1) & (HANDCRAFTED_WTS.c2==c2) & (HANDCRAFTED_WTS.c3==c3)].irow(0)
+
+    return [wts_to_use.w1, wts_to_use.w2, wts_to_use.w3]
+
+def opt_shrinkage(returns, shrinkage_factors, equalisevols=True, default_vol=0.2):
+    """
+    Returns the optimal portfolio for the dataframe returns using shrinkage
+
+    shrinkage_factors is a tuple, shrinkage of mean and correlation
+    
+    If equalisevols=True then normalises returns to have same standard deviation; the weights returned
+       will be 'risk weightings'
+       
+    
+    """
+    
+    if equalisevols:
+        use_returns=equalise_vols(returns, default_vol)
+    else:
+        use_returns=returns
+    
+    (shrinkage_mean, shrinkage_corr)=shrinkage_factors
+
+    ## Sigma matrix 
+    ## Use correlation and then convert back to variance
+    est_corr=use_returns.corr().values
+    avg_corr=get_avg_corr(est_corr)
+    prior_corr=offdiag_matrix(avg_corr, est_corr.shape[0])
+
+    sigma_corr=shrinkage_corr*prior_corr+(1-shrinkage_corr)*est_corr
+    cov_vector=use_returns.std().values
+    
+    sigma=cov_vector*sigma_corr*cov_vector
+
+    ## mus vector
+    avg_return=np.mean(use_returns.mean())
+    est_mus=np.array([use_returns[asset_name].mean() for asset_name in use_returns.columns], ndmin=2).transpose()
+    prior_mus=np.array([avg_return for asset_name in use_returns.columns], ndmin=2).transpose()
+    
+    mus=shrinkage_mean*prior_mus+(1-shrinkage_mean)*est_mus
+    
+    ## Starting weights
+    number_assets=use_returns.shape[1]
+    start_weights=[1.0/number_assets]*number_assets
+    
+    ## Constraints - positive weights, adding to 1.0
+    bounds=[(0.0,1.0)]*number_assets
+    cdict=[{'type':'eq', 'fun':addem}]
+    
+    ans=minimize(neg_SR, start_weights, (sigma, mus), method='SLSQP', bounds=bounds, constraints=cdict, tol=0.00001)
+        
+    return ans['x']
+    
+    
+
+
 def markosolver(returns, equalisemeans=False, equalisevols=True, default_vol=0.2, default_SR=1.0):
     """
     Returns the optimal portfolio for the dataframe returns
@@ -123,9 +237,10 @@ def markosolver(returns, equalisemeans=False, equalisevols=True, default_vol=0.2
 
     ## Expected mean returns    
     if equalisemeans:
-        ## Don't use the data - Set to the default Sharpe Ratio
-        mus=np.array([(sigma.diagonal()[idx]**.5)*default_SR/16.0 for idx in range(len(use_returns.columns))], ndmin=2).transpose()
-        
+        ## Don't use the data - Set to the average Sharpe Ratio
+        avg_return=np.mean(use_returns.mean())
+        mus=np.array([avg_return for asset_name in use_returns.columns], ndmin=2).transpose()
+
     else:
         mus=np.array([use_returns[asset_name].mean() for asset_name in use_returns.columns], ndmin=2).transpose()
     
@@ -238,7 +353,7 @@ def bootstrap_portfolio(returns_to_bs, monte_carlo=200, monte_length=250, equali
     return theweights_mean
 
 def optimise_over_periods(data, date_method, fit_method, rollyears=20, equalisemeans=False, equalisevols=True, 
-                          monte_carlo=200, monte_length=250):
+                          monte_carlo=200, monte_length=250, shrinkage_factors=(0.5, 0.5)):
     """
     Do an optimisation
     
@@ -271,6 +386,9 @@ def optimise_over_periods(data, date_method, fit_method, rollyears=20, equalisem
             weights=bootstrap_portfolio(period_subset_data, equalisemeans=equalisemeans, 
                                         equalisevols=equalisevols, monte_carlo=monte_carlo, 
                                         monte_length=monte_length)
+        elif fit_method=="shrinkage":
+            weights=opt_shrinkage(period_subset_data, shrinkage_factors=shrinkage_factors, equalisevols=equalisevols)
+            
         else:
             raise Exception("Fitting method %s unknown" % fit_method)
         
@@ -300,7 +418,7 @@ def opt_and_plot(*args, **kwargs):
 
 ## Get the data
 
-filename="assetprices.csv"
+filename="/home/rob/workspace/systematictradingexamples/assetprices.csv"
 data=pd_readcsv(filename)
 
 ## Let's do some optimisation
@@ -329,3 +447,5 @@ if __name__=="__main__":
     opt_and_plot(data, "expanding", "one_period", equalisemeans=False, equalisevols=True)
     
     opt_and_plot(data, "expanding", "bootstrap", equalisemeans=False, equalisevols=True)
+    
+    

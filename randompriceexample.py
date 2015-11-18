@@ -3,7 +3,8 @@ See http://qoppac.blogspot.co.uk/2015/11/using-random-data.html for more example
 """
 
 
-from commonrandom import arbitrary_timeseries, generate_trendy_price
+from common import arbitrary_timeseries
+from commonrandom import  generate_trendy_price
 from matplotlib.pyplot import show
 
 
