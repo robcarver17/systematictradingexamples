@@ -1,0 +1,64 @@
+Ticker,Weight,Sector
+MG,3.3333,Consumer Discretionary
+TRI,3.3333,Consumer Discretionary
+QSR,3.3333,Consumer Discretionary
+DOL,0,Consumer Discretionary
+SJR.B,0,Consumer Discretionary
+CTC.A,0,Consumer Discretionary
+GIL,0,Consumer Discretionary
+ATD.B,3.3333,Consumer Staples
+L,3.3333,Consumer Staples
+SAP,3.3333,Consumer Staples
+MRU,0,Consumer Staples
+WN,0,Consumer Staples
+SU,3.3333,Energy
+ENB,3.3333,Energy
+CNQ,3.3333,Energy
+TRP,0,Energy
+CVE,0,Energy
+PPL,0,Energy
+IMO,0,Energy
+CPG,0,Energy
+IPL,0,Energy
+ECA,0,Energy
+ARX,0,Energy
+CCO,0,Energy
+HSE,0,Energy
+RY,3.33333,Financials
+TD,3.33333,Financials
+BNS,3.33333,Financials
+BMO,0,Financials
+CM,0,Financials
+BAM.A,0,Financials
+MFC,0,Financials
+SLF,0,Financials
+NA,0,Financials
+POW,0,Financials
+VRX,10,Health Care
+CNR,3.33333,Industrials
+CP,3.33333,Industrials
+SNC,3.33333,Industrials
+BBD.B,0,Industrials
+GIB.A,3.3333,Information Technology
+CSU,3.3333,Information Technology
+BB,3.3333,Information Technology
+ABX,3.333,Materials
+G,3.333,Materials
+POT,3.333,Materials
+AGU,0,Materials
+FNV,0,Materials
+AEM,0,Materials
+SLW,0,Materials
+K,0,Materials
+TCK.B,0,Materials
+YRI,0,Materials
+FM,0,Materials
+ELD,0,Materials
+BCE,3.3333,Telecommunications
+T,3.3333,Telecommunications
+RCI.B,3.3333,Telecommunications
+FTS,5,Utilities
+EMA,5,Utilities
+,,
+,,
+ ,,

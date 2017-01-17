@@ -20,7 +20,7 @@ from common import cap_series, pd_readcsv, find_datediff, get_price_for_instrume
 
 ## This is the stitched price series
 ## We can't use the price of the contract we're trading, or the volatility will be jumpy
-code="CRUDE_W"
+code="US10"
 price=get_price_for_instrument(code)
 
 
@@ -59,7 +59,7 @@ plt.show()
 
 forecast=raw_carry*f_scalar
 
-c_forecast=cap_series(forecast)
+c_forecast=cap_series(forecast).to_frame()
 
 data_to_plot=pd.concat([forecast,c_forecast], axis=1)
 data_to_plot.columns=['Forecast','Capped forecast']

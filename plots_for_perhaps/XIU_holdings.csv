@@ -1,0 +1,64 @@
+Ticker,Weight,Sector
+MG,1.51,Consumer Discretionary
+TRI,1.27,Consumer Discretionary
+QSR,0.89,Consumer Discretionary
+DOL,0.76,Consumer Discretionary
+SJR.B,0.74,Consumer Discretionary
+CTC.A,0.72,Consumer Discretionary
+GIL,0.67,Consumer Discretionary
+ATD.B,1.81,Consumer Staples
+L,1.15,Consumer Staples
+SAP,0.78,Consumer Staples
+MRU,0.77,Consumer Staples
+WN,0.4,Consumer Staples
+SU,4.44,Energy
+ENB,3.61,Energy
+CNQ,3.13,Energy
+TRP,2.68,Energy
+CVE,1.15,Energy
+PPL,1,Energy
+IMO,0.79,Energy
+CPG,0.77,Energy
+IPL,0.68,Energy
+ECA,0.57,Energy
+ARX,0.52,Energy
+CCO,0.48,Energy
+HSE,0.39,Energy
+RY,8.58,Financials
+TD,7.75,Financials
+BNS,5.73,Financials
+BMO,3.89,Financials
+CM,2.92,Financials
+BAM.A,2.81,Financials
+MFC,2.68,Financials
+SLF,1.94,Financials
+NA,1.11,Financials
+POW,0.83,Financials
+VRX,0.9,Health Care
+CNR,4.79,Industrials
+CP,1.95,Industrials
+SNC,0.53,Industrials
+BBD.B,0.2,Industrials
+GIB.A,1.32,Information Technology
+CSU,0.76,Information Technology
+BB,0.32,Information Technology
+ABX,1.85,Materials
+G,1.43,Materials
+POT,1.32,Materials
+AGU,1.2,Materials
+FNV,1.19,Materials
+AEM,0.87,Materials
+SLW,0.7,Materials
+K,0.53,Materials
+TCK.B,0.39,Materials
+YRI,0.38,Materials
+FM,0.38,Materials
+ELD,0.28,Materials
+BCE,3.93,Telecommunications
+T,1.85,Telecommunications
+RCI.B,1.36,Telecommunications
+FTS,0.85,Utilities
+EMA,0.53,Utilities
+,,
+,,
+ ,,

@@ -88,6 +88,35 @@ def neg_SR(weights, sigma, mus):
     
     return -estreturn/std_dev
 
+def sigma_from_corr(std, corr):
+    sigma=std*corr*std
+
+    return sigma
+
+def basic_opt(std,corr,mus):
+    number_assets=mus.shape[0]
+    sigma=sigma_from_corr(std, corr)
+    start_weights=[1.0/number_assets]*number_assets
+    
+    ## Constraints - positive weights, adding to 1.0
+    bounds=[(0.0,1.0)]*number_assets
+    cdict=[{'type':'eq', 'fun':addem}]
+
+    return minimize(neg_SR_riskfree, start_weights, (sigma, mus), method='SLSQP', bounds=bounds, constraints=cdict, tol=0.00001)
+
+def neg_SR_riskfree(weights, sigma, mus, riskfree=0.00):
+    ## Returns minus the Sharpe Ratio (as we're minimising)
+
+    """    
+    estreturn=250.0*((np.matrix(x)*mus)[0,0])
+    variance=(variance(x,sigma)**.5)*16.0
+    """
+    estreturn=(np.matrix(weights)*mus)[0,0] - riskfree
+    std_dev=(variance(weights,sigma)**.5)
+
+    
+    return -estreturn/std_dev
+
 
 def equalise_vols(returns, default_vol):
     """
@@ -314,12 +343,14 @@ def generate_fitting_dates(data, date_method, rollyears=20):
     ## give the user back the list of periods
     return periods
 
-
+        
 """
 Now do some fitting
 
 Before we do that we need a bootstrap fitter
 """
+
+
 
 def bootstrap_portfolio(returns_to_bs, monte_carlo=200, monte_length=250, equalisemeans=False, equalisevols=True, default_vol=0.2, default_SR=1.0):
     
@@ -431,7 +462,7 @@ if __name__=="__main__":
     data, date_method, fit_method, rollyears=20, equalisemeans=False, equalisevols=True, 
                               monte_carlo=200, monte_length=250
     
-    """
+    
     opt_and_plot(data, "in_sample", "one_period", equalisemeans=False, equalisevols=False)
     
     opt_and_plot(data, "in_sample", "one_period", equalisemeans=False, equalisevols=True)
@@ -448,4 +479,4 @@ if __name__=="__main__":
     
     opt_and_plot(data, "expanding", "bootstrap", equalisemeans=False, equalisevols=True)
     
-    
+    """
