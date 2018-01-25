@@ -50,7 +50,7 @@ vol_lookback=25
 stdev_returns=pd.ewmstd(price - price.shift(1), span=vol_lookback)
 ann_stdev=stdev_returns*ROOT_DAYS_IN_YEAR
 
-raw_carry=nerpu/ann_stdev
+raw_carry=(nerpu/ann_stdev.transpose()).transpose()
 f_scalar=30.0
 
 raw_carry.plot()
