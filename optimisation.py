@@ -126,7 +126,7 @@ def equalise_vols(returns, default_vol):
     
     factors=(default_vol/16.0)/returns.std(axis=0)
     facmat=create_dull_pd_matrix(dullvalue=factors, dullname=returns.columns, index=returns.index)
-    norm_returns=returns*facmat
+    norm_returns=returns*facmat.values
     norm_returns.columns=returns.columns
 
     return norm_returns
