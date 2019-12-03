@@ -23,7 +23,7 @@ from scipy.optimize import minimize
 from copy import copy
 import random
 
-HANDCRAFTED_WTS=pd.read_csv("/home/rob/workspace/systematictradingexamples/handcraftweights.csv")
+HANDCRAFTED_WTS=pd.read_csv("handcraftweights.csv")
 
 def pd_readcsv(filename):
     """
@@ -126,7 +126,7 @@ def equalise_vols(returns, default_vol):
     
     factors=(default_vol/16.0)/returns.std(axis=0)
     facmat=create_dull_pd_matrix(dullvalue=factors, dullname=returns.columns, index=returns.index)
-    norm_returns=returns*facmat
+    norm_returns=returns*facmat.values
     norm_returns.columns=returns.columns
 
     return norm_returns
@@ -449,7 +449,7 @@ def opt_and_plot(*args, **kwargs):
 
 ## Get the data
 
-filename="/home/rob/workspace/systematictradingexamples/assetprices.csv"
+filename="assetprices.csv"
 data=pd_readcsv(filename)
 
 ## Let's do some optimisation
